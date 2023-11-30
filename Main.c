@@ -349,7 +349,7 @@ void salvarArquivo(Tabela *tabela) {
         }
         fprintf(file, "\n");
     }
-    //fprintf(file, "");
+    fprintf(file, "End Of Table");
     fclose(file);
     printf("Tabela '%s' salva com sucesso.\n", tabela->nome);
 }
