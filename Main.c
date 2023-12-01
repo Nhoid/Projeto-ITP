@@ -97,6 +97,43 @@ Tabela* criarTabela(int linhas, int colunas, char nome[]) {
     return newTable;
 }
 
+// Função que compara valores inteiros de acordo com o operador fornecido
+bool comparaInt(int valorTabela, int valorPesquisado, char operador) {
+    switch (operador) {
+        case '>': return valorTabela > valorPesquisado;
+        case '<': return valorTabela < valorPesquisado;
+        case '=': return valorTabela == valorPesquisado;
+        case 'G': return valorTabela >= valorPesquisado; // Maior ou igual
+        case 'L': return valorTabela <= valorPesquisado; // Menor ou igual
+        default: return false;
+    }
+}
+
+// Função que compara valores float de acordo com o operador fornecido
+bool comparaFloat(float valorTabela, float valorPesquisado, char operador) {
+    switch (operador) {
+        case '>': return valorTabela > valorPesquisado;
+        case '<': return valorTabela < valorPesquisado;
+        case '=': return valorTabela == valorPesquisado;
+        case 'G': return valorTabela >= valorPesquisado;
+        case 'L': return valorTabela <= valorPesquisado;
+        default: return false;
+    }
+}
+
+// Função que compara strings de acordo com o operador fornecido
+bool comparaString(const char* valorTabela, const char* valorPesquisado, char operador) {
+    int cmp = strcmp(valorTabela, valorPesquisado);
+    switch (operador) {
+        case '>': return cmp > 0;
+        case '<': return cmp < 0;
+        case '=': return cmp == 0;
+        case 'G': return cmp >= 0;
+        case 'L': return cmp <= 0;
+        default: return false;
+    }
+}
+
 //VERIFICA SE JÁ TEM DETERMINADA CHAVE PRIMÁRIA REGISTRADA NA TABELA;
 bool verificarChave(Tabela *tabela, int chave)
 {
@@ -209,6 +246,115 @@ void calcularLarguraColunas(Tabela *tabela, int *larguras) {
         }
     }
 }
+
+//FAZ PESQUISA DE VALOR NA TABELA
+void pesquisaValor(Tabela *tabela) {
+    char nomeColunaPesquisa[TAMANHO_MAX_NOME];
+    char operador;
+    char valorPesquisa[100];
+    int indiceColuna = -1;
+    int larguras[tabela->colunas];
+    memset(larguras, 0, sizeof(larguras));
+
+    // Mostrar o nome de todas as colunas
+    printf("Colunas disponíveis:\n");
+    for (int i = 0; i < tabela->colunas; i++) {
+        printf("%s\n", tabela->nomeColuna[i]);
+    }
+
+    // Pergunta ao usuário o nome da coluna para pesquisa
+    printf("Digite o nome da coluna para a pesquisa: ");
+    fgets(nomeColunaPesquisa, sizeof(nomeColunaPesquisa), stdin);
+    nomeColunaPesquisa[strcspn(nomeColunaPesquisa, "\n")] = 0; // Remove a quebra de linha
+
+    // Encontra o índice da coluna pelo nome
+    for (int i = 0; i < tabela->colunas; i++) {
+        if (strcmp(tabela->nomeColuna[i], nomeColunaPesquisa) == 0) {
+            indiceColuna = i;
+            break;
+        }
+    }
+    if (indiceColuna == -1) {
+        printf("Coluna não encontrada.\n");
+        return;
+    }
+
+    // Pergunta o tipo de comparação
+    printf("Digite o tipo de comparação desejada (>, <, =, G para >=, L para <=): ");
+    operador = getchar();
+    getchar(); // Limpa o buffer de entrada
+
+    // Pergunta o valor a ser pesquisado
+    printf("Digite o valor para pesquisa: ");
+    fgets(valorPesquisa, sizeof(valorPesquisa), stdin);
+    valorPesquisa[strcspn(valorPesquisa, "\n")] = 0; // Remove a quebra de linha
+
+    // Prepara as larguras das colunas para o cabeçalho
+    calcularLarguraColunas(tabela, larguras);
+
+    // Imprime o cabeçalho da tabela
+    for (int j = 0; j < tabela->colunas; j++) {
+        printf("| %-*s ", larguras[j], tabela->nomeColuna[j]);
+    }
+    printf("|\n");
+
+    // Linha separadora
+    for (int j = 0; j < tabela->colunas; j++) {
+        printf("+");
+        for (int k = 0; k < larguras[j] + 2; k++) {
+            printf("-");
+        }
+    }
+    printf("+\n");
+
+    // Realiza a pesquisa e imprime os resultados
+    for (int i = 0; i < tabela->linhas; i++) {
+        bool match = false;
+        // A comparação é feita apenas com base no tipo da coluna
+        switch (tabela->tiposColuna[indiceColuna]) {
+            case INT_TYPE:
+                match = comparaInt(tabela->table[i][indiceColuna].intVal, atoi(valorPesquisa), operador);
+                break;
+            case FLOAT_TYPE:
+                match = comparaFloat(tabela->table[i][indiceColuna].floatVal, atof(valorPesquisa), operador);
+                break;
+            case STRING_TYPE:
+                match = comparaString(tabela->table[i][indiceColuna].strVal, valorPesquisa, operador);
+                break;
+        }
+        if (match) {
+            // Imprime a linha completa que corresponde à pesquisa
+            for (int j = 0; j < tabela->colunas; j++) {
+                switch (tabela->tiposColuna[j]) {
+                    case INT_TYPE:
+                        printf("| %-*d ", larguras[j], tabela->table[i][j].intVal);
+                        break;
+                    case STRING_TYPE:
+                        printf("| %-*s ", larguras[j], tabela->table[i][j].strVal);
+                        break;
+                    case FLOAT_TYPE:
+                        printf("| %-*.2f ", larguras[j], tabela->table[i][j].floatVal);
+                        break;
+                }
+            }
+            printf("|\n");
+        }
+    }
+
+    // Linha final
+    for (int j = 0; j < tabela->colunas; j++) {
+        printf("+");
+        for (int k = 0; k < larguras[j] + 2; k++) {
+            printf("-");
+        }
+    }
+    printf("+\n");
+
+    printf("Digite 0 para voltar ao menu.\n");
+    scanf("%d", &indiceColuna); // Reutiliza a variável para a entrada do usuário
+    getchar(); // Limpa o buffer de entrada
+}
+
 
 //PRINTAR A TABELA
 void mostrarTabela(Tabela *tabela) {
@@ -412,8 +558,9 @@ int main(){
         printf("| 2. Adicionar dados na tabela          |\n");
         printf("| 3. Visualizar Tabela                  |\n");
         printf("| 4. Remover Linha                      |\n");
-        printf("| 5. Salvar Tabela                      |\n");
-        printf("| 6. Sair                               |\n");
+        printf("| 5. Pesquisar Valor                    |\n");
+        printf("| 6. Salvar Tabela                      |\n");
+        printf("| 7. Sair                               |\n");
         printf("========================================\n");
         if (lambda != NULL)
         {
@@ -431,6 +578,7 @@ int main(){
 
         switch (opcao) {
             case 1:
+                limparTela();
                 printf("Qual Nome da Tabela? \n");
                 scanf(" %49s", nome);
                 getchar();
@@ -445,6 +593,8 @@ int main(){
             case 2:
                 if (lambda != NULL)
                 {
+                    limparTela();
+                     printf("Tabela selecionada: %s\n", lambda->nome);
                     printf("Quando você não quiser mais adicionar dados a tabela digite -> Fim <-\n");
                     PegarDados(lambda);
                 }else{
@@ -454,7 +604,9 @@ int main(){
             case 3:
                 if (lambda != NULL)
                 {
-                  mostrarTabela(lambda);  
+                    printf("Tabela selecionada: %s\n", lambda->nome);
+                    limparTela();
+                    mostrarTabela(lambda);  
                 }else{
                     aviso = true;
                 }
@@ -462,6 +614,8 @@ int main(){
             case 4:
                 if (lambda != NULL)
                 {
+                    limparTela();
+                     printf("Tabela selecionada: %s\n", lambda->nome);
                     printf("Qual a chave da linha que você quer apagar da tabela '%s': \n", lambda->nome);
                     scanf("%d", &chave);
                     removerLinhaPorChave(lambda, chave);
@@ -470,14 +624,20 @@ int main(){
                 }
                 break;
             case 5:
+                limparTela();
                 if (lambda != NULL)
                 {
-                   salvarArquivo(lambda, ArquivoTabela); 
+                    pesquisaValor(lambda);
                 }else{
                     aviso = true;
                 }
                 break;
             case 6:
+                if (lambda != NULL) {
+                    salvarArquivo(lambda, ArquivoTabela);
+                }else{aviso = true;}
+                break;
+            case 7:
                 executando = false;
                 if (lambda != NULL) {
                     liberarTabela(lambda);
