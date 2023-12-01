@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <ctype.h>
 #define TAMANHO_MAX_NOME 50
 //Limpa a tela
 void limparTela() {
@@ -50,20 +51,20 @@ Tabela* criarTabela(int linhas, int colunas, char nome[]) {
     char nomeColuna[TAMANHO_MAX_NOME];
     int tipo;
     printf("A primeira coluna, por padrão, é a coluna da chave primária.\n");
-    printf("E as chaves primarias são todas do tipo inteiro.\n")
+    printf("E as chaves primarias são todas do tipo inteiro.\n");
     printf("Escreva o nome de cada Coluna seguido de seu tipo (Ex: NomeCliente;1):\n");
     printf("Texto = 1\nNúmero inteiro = 2\nNúmero com casa decimal = 3\n");
 
     for (int i = 0; i < colunas; i++) {
         if (i == 0)
         {
-        printf("Coluna %d(Chave primária): ", i + 1);
+        printf("Nome da coluna %d(Chave primária): ", i + 1);
          fgets(linhaEntrada, 100, stdin);
-        sscanf(linhaEntrada, "%49[^\n]", nomeColuna, &tipo);
+        sscanf(linhaEntrada, "%49[^\n]", nomeColuna);
         newTable->nomeColuna[i] = strdup(nomeColuna);
         newTable->tiposColuna[i] = INT_TYPE;
         }else{
-        printf("Coluna %d: ", i + 1);
+        printf("Nome e tipo da coluna %d: ", i + 1);
          fgets(linhaEntrada, 100, stdin);
         sscanf(linhaEntrada, "%49[^;];%d", nomeColuna, &tipo);
         newTable->nomeColuna[i] = strdup(nomeColuna);
@@ -96,16 +97,35 @@ Tabela* criarTabela(int linhas, int colunas, char nome[]) {
     return newTable;
 }
 
+//VERIFICA SE JÁ TEM DETERMINADA CHAVE PRIMÁRIA REGISTRADA NA TABELA;
+bool verificarChave(Tabela *tabela, int chave)
+{
+    for (int i = 0; i < tabela->linhas; i++)
+    {
+        if (tabela->table[i][0].intVal==chave)
+        {
+            return false;
+        }
+    }
+    return true;
+} 
+
 //AUMENTA A TABELA QUANDO NECESSARIO, AUMENTA UMA LINHA DE CADA VEZ
 void aumentarTabela(Tabela *tabela) {
-    int novoTamanho = tabela->linhas + 1; // Adiciona espaço para uma linha extra
-    Celula **novaTable = realloc(tabela->table, novoTamanho * sizeof(Celula*));
+    int novoTamanho = tabela->linhas + 1; // Calcula o novo tamanho da tabela
+    Celula **novaTable = realloc(tabela->table, novoTamanho * sizeof(Celula*)); // Realoca com o novo tamanho
     if (novaTable == NULL) {
         printf("Erro ao adicionar nova linha\n");
         return;
     }
-    tabela->table = novaTable;
-    tabela->table[tabela->linhas] = malloc(tabela->colunas * sizeof(Celula)); // Aloca a nova linha
+
+    novaTable[tabela->linhas] = malloc(tabela->colunas * sizeof(Celula)); // Aloca a nova linha
+    if (novaTable[tabela->linhas] == NULL) {
+        printf("Erro ao alocar memória para nova linha\n");
+        return;
+    }
+
+    tabela->table = novaTable; // Atualiza o ponteiro da tabela
     tabela->linhas = novoTamanho; // Atualiza o contador de linhas
 }
 
@@ -132,8 +152,7 @@ void removerLinhaPorChave(Tabela *tabela, int chavePrimaria) {
     int linhaParaRemover = -1;
 
     // Encontrar a linha com a chave primária especificada
-    // A chave primária está na primeira coluna de cada linha
-    for (int i = 0; i < tabela->linhas - 1; i++) {
+    for (int i = 0; i < tabela->linhas; i++) {
         if (tabela->table[i][0].intVal == chavePrimaria) {
             linhaParaRemover = i;
             break;
@@ -142,17 +161,25 @@ void removerLinhaPorChave(Tabela *tabela, int chavePrimaria) {
 
     // Se a linha foi encontrada, removê-la
     if (linhaParaRemover != -1) {
-        // Libere a memória da linha específica
+        // Libera a memória da linha específica
         free(tabela->table[linhaParaRemover]);
 
-        // Mova todas as linhas após a removida para "cima" no array
-        for (int i = linhaParaRemover; i < tabela->linhas - 2; i++) {
+        // Desloca todas as linhas seguintes para cima no array
+        for (int i = linhaParaRemover; i < tabela->linhas - 1; i++) {
             tabela->table[i] = tabela->table[i + 1];
         }
 
-        // Realoque o array da tabela para ter uma linha a menos
-        tabela->table = realloc(tabela->table, (tabela->linhas - 2) * sizeof(Celula*));
+        // Diminui o contador de linhas
         tabela->linhas--;
+
+        // Realoca o array da tabela para ter uma linha a menos
+        Celula **novaTable = realloc(tabela->table, tabela->linhas * sizeof(Celula*));
+        if (novaTable != NULL || tabela->linhas == 0) {
+            tabela->table = novaTable;
+        } else {
+            // Se a realloc falhar e a contagem de linhas não for zero, temos um erro grave
+            printf("Erro ao realocar memória após remover linha.\n");
+        }
     } else {
         printf("Chave primária não encontrada.\n");
     }
@@ -233,26 +260,14 @@ void mostrarTabela(Tabela *tabela) {
     }
 }
 
-//VERIFICA SE JÁ TEM DETERMINADA CHAVE PRIMÁRIA REGISTRADA NA TABELA;
-bool verificarChave(Tabela *tabela, int chave)
-{
-    for (int i = 0; i < tabela->linhas; i++)
-    {
-        if (tabela->table[i][0].intVal==chave)
-        {
-            return false;
-        }
-    }
-    return true;
-} 
-
 
 //PEGAR ENTRADA DO USUARIO
 void PegarDados(Tabela *tabela) {
     char buffer[100]; // Buffer para entrada do usuário
     bool continuar = true, chaveValida;
     int linhaAtual = tabela->linhas - 1; // Ajustado para corresponder ao índice correto
-
+    int chave, resultado;
+    char *endPtr;
     while (continuar) {
         // Se já existem linhas, aloca uma nova linha
         if (linhaAtual >= 0) {
@@ -264,14 +279,28 @@ void PegarDados(Tabela *tabela) {
         do {
             printf("Digite o valor para a chave primária: ");
             fgets(buffer, sizeof(buffer), stdin);
-            chave = atoi(buffer);
+            if (strcmp(buffer, "Fim\n") == 0) {
+                continuar = false;
+                chaveValida = true;
+                break;
+            }
+
+            chave = (int) strtol(buffer, &endPtr, 10);
+            if (*endPtr != '\n' && *endPtr != '\0') {
+                printf("Tipo de chave inválida, a chave precisa ser um número inteiro puro.\n");
+                continue;
+            }
 
             chaveValida = verificarChave(tabela, chave);
             if (!chaveValida) {
                 printf("Chave primária já existe. Por favor, insira uma chave primária única.\n");
             }
         } while (!chaveValida);
-        tabela->table[tabela->linhas - 1][0].intVal = chave;
+        if (!continuar)
+        {
+            break;
+        }
+        tabela->table[tabela->linhas-2][0].intVal = chave;
         for (int j = 1; j < tabela->colunas; j++) {
             printf("Digite o valor para a coluna '%s': ", tabela->nomeColuna[j]);
             fgets(buffer, 100, stdin); // Lê a entrada do usuário
@@ -367,9 +396,9 @@ void salvarArquivo(Tabela *tabela, const char *nomeArquivo) {
 }
 
 int main(){
-    int opcao, colunas;
+    int opcao, colunas, chave;
     char nome[TAMANHO_MAX_NOME];
-    bool executando = true, aviso;
+    bool executando = true, aviso = false;
     Tabela *lambda = NULL;
     const char *ArquivoTabela = "tabelas.itp";
     while (executando) {
@@ -382,13 +411,14 @@ int main(){
         printf("| 1. Criar Nova Tabela                  |\n");
         printf("| 2. Adicionar dados na tabela          |\n");
         printf("| 3. Visualizar Tabela                  |\n");
-        printf("| 4. Salvar Tabelas                     |\n");
-        printf("| 5. Sair                               |\n");
+        printf("| 4. Remover Linha                      |\n");
+        printf("| 5. Salvar Tabela                      |\n");
+        printf("| 6. Sair                               |\n");
         printf("========================================\n");
         if (lambda != NULL)
         {
             printf("Tabela selecionada: %s\n", lambda->nome);
-        }
+        }else if (!aviso) {printf("Nenhuma tabela selecionada ou criada.\n");}
         if (aviso)
         {
             printf("Nenhuma tabela selecionada.\n");
@@ -432,12 +462,22 @@ int main(){
             case 4:
                 if (lambda != NULL)
                 {
-                   salvarArquivo(lambda, ArquivoTabela); 
+                    printf("Qual a chave da linha que você quer apagar da tabela '%s': \n", lambda->nome);
+                    scanf("%d", &chave);
+                    removerLinhaPorChave(lambda, chave);
                 }else{
                     aviso = true;
                 }
                 break;
             case 5:
+                if (lambda != NULL)
+                {
+                   salvarArquivo(lambda, ArquivoTabela); 
+                }else{
+                    aviso = true;
+                }
+                break;
+            case 6:
                 executando = false;
                 if (lambda != NULL) {
                     liberarTabela(lambda);
