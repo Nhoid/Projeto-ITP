@@ -26,73 +26,72 @@ typedef enum {
     FLOAT_TYPE
 } DataType;
 
-//CELULAS COM REGISTROS DE CADA TIPO
-typedef struct {
-    DataType tipo; // Adiciona um campo para o tipo
-    Celula dado;
-} CelulaComTipo;
-
+//ESTRUTURA DA TABELA COMPLETA
 typedef struct {
     char nome[TAMANHO_MAX_NOME];
     char **nomeColuna;
-    CelulaComTipo *tiposColuna; // Primeira linha com tipos e dados
+    DataType *tiposColuna; // Primeira linha com tipos e dados
     Celula **table; // Restante das linhas com apenas dados
     int linhas, colunas;
 } Tabela;
 
+//CONSTRUTOR DE TABELA
+Tabela* criarTabela(int linhas, int colunas, char nome[]) {
+    Tabela* newTable = malloc(sizeof(Tabela)); // Aloca memória para a nova tabela
+    if (newTable == NULL) {
+        printf("Falha na alocação de memória.\n");
+        return NULL;
+    }
 
-Tabela criarTabela(int linhas, int colunas, char nome[]) {
-    Tabela newTable;
-    newTable.nomeColuna = malloc(colunas * sizeof(char*));
-    newTable.tiposColuna = malloc(colunas * sizeof(DataType));
+    newTable->nomeColuna = malloc(colunas * sizeof(char*));
+    newTable->tiposColuna = malloc(colunas * sizeof(DataType));
 
     char linhaEntrada[100];
     char nomeColuna[TAMANHO_MAX_NOME];
     int tipo;
-
+    printf("A primeira coluna, por padrão, é a coluna da chave primária.\n");
+    printf("E as chaves primarias são todas do tipo inteiro.\n")
     printf("Escreva o nome de cada Coluna seguido de seu tipo (Ex: NomeCliente;1):\n");
     printf("Texto = 1\nNúmero inteiro = 2\nNúmero com casa decimal = 3\n");
 
     for (int i = 0; i < colunas; i++) {
+        if (i == 0)
+        {
+        printf("Coluna %d(Chave primária): ", i + 1);
+         fgets(linhaEntrada, 100, stdin);
+        sscanf(linhaEntrada, "%49[^\n]", nomeColuna, &tipo);
+        newTable->nomeColuna[i] = strdup(nomeColuna);
+        newTable->tiposColuna[i] = INT_TYPE;
+        }else{
         printf("Coluna %d: ", i + 1);
-        fgets(linhaEntrada, 100, stdin);
+         fgets(linhaEntrada, 100, stdin);
         sscanf(linhaEntrada, "%49[^;];%d", nomeColuna, &tipo);
-        newTable.nomeColuna[i] = strdup(nomeColuna);
+        newTable->nomeColuna[i] = strdup(nomeColuna);
 
         switch (tipo) {
             case 1:
-                newTable.tiposColuna[i].tipo = STRING_TYPE;
+                newTable->tiposColuna[i] = STRING_TYPE;
                 break;
             case 2:
-                newTable.tiposColuna[i].tipo = INT_TYPE;
+                newTable->tiposColuna[i] = INT_TYPE;
                 break;
             case 3:
-                newTable.tiposColuna[i].tipo = FLOAT_TYPE;
+                newTable->tiposColuna[i] = FLOAT_TYPE;
                 break;
             default:
                 printf("Tipo inválido. Atribuindo como texto.\n");
-                newTable.tiposColuna[i].tipo = STRING_TYPE;
-        }
+                newTable->tiposColuna[i] = STRING_TYPE;
+        }}
     }
 
-    //ALOCANDO ESPAÇO PARA AS CELULAS RESTANTES DA PLANILHA
-    newTable.table = malloc(linhas * sizeof(Celula*));
+    newTable->table = malloc(linhas * sizeof(Celula*));
     for (int i = 0; i < linhas; i++) {
-        newTable.table[i] = malloc(colunas * sizeof(Celula));
+        newTable->table[i] = malloc(colunas * sizeof(Celula));
     }
-    //PASSANDO PARA A TABELA SUAS DIMENSÕES
-    newTable.linhas = linhas;
-    newTable.colunas = colunas;
-    strcpy(newTable.nome, nome);
 
-    char nomeArquivo[TAMANHO_MAX_NOME];
-    snprintf(nomeArquivo, sizeof(nomeArquivo), "%s.csv", nome); // Cria o nome do arquivo com extensão .csv
-    FILE *file = fopen(nomeArquivo, "w"); // Abre o arquivo para escrita
-    if (file == NULL) {
-        perror("Erro ao criar o arquivo da tabela");
-    } else {
-        fclose(file); // Fecha o arquivo
-    }
+    newTable->linhas = linhas;
+    newTable->colunas = colunas;
+    strcpy(newTable->nome, nome);
 
     return newTable;
 }
@@ -166,7 +165,7 @@ void calcularLarguraColunas(Tabela *tabela, int *larguras) {
 
         for (int i = 0; i < tabela->linhas - 1; i++) {
             int tamanhoCelula = 0;
-            switch (tabela->tiposColuna[j].tipo) {
+            switch (tabela->tiposColuna[j]) {
                 case INT_TYPE:
                     tamanhoCelula = snprintf(NULL, 0, "%d", tabela->table[i][j].intVal);
                     break;
@@ -211,9 +210,9 @@ void mostrarTabela(Tabela *tabela) {
     printf("+\n");
 
     // Imprime os dados da tabela
-    for (int i = 0; i < tabela->linhas; i++) {
+    for (int i = 0; i < tabela->linhas-1; i++) {
         for (int j = 0; j < tabela->colunas; j++) {
-            switch (tabela->tiposColuna[j].tipo) {
+            switch (tabela->tiposColuna[j]) {
                 case INT_TYPE:
                     printf("| %-*d ", larguras[j], tabela->table[i][j].intVal);
                     break;
@@ -234,32 +233,61 @@ void mostrarTabela(Tabela *tabela) {
     }
 }
 
+//VERIFICA SE JÁ TEM DETERMINADA CHAVE PRIMÁRIA REGISTRADA NA TABELA;
+bool verificarChave(Tabela *tabela, int chave)
+{
+    for (int i = 0; i < tabela->linhas; i++)
+    {
+        if (tabela->table[i][0].intVal==chave)
+        {
+            return false;
+        }
+    }
+    return true;
+} 
+
 
 //PEGAR ENTRADA DO USUARIO
 void PegarDados(Tabela *tabela) {
     char buffer[100]; // Buffer para entrada do usuário
-    bool continuar = true;
-    int linhaAtual = 0;
+    bool continuar = true, chaveValida;
+    int linhaAtual = tabela->linhas - 1; // Ajustado para corresponder ao índice correto
 
     while (continuar) {
+        // Se já existem linhas, aloca uma nova linha
+        if (linhaAtual >= 0) {
+            aumentarTabela(tabela);
+        }
+
         printf("Inserindo dados para a linha %d:\n", linhaAtual + 1);
-        for (int j = 0; j < tabela->colunas; j++) {
+        //FAZ A VERIFICAÇÃO SE A CHAVE PRIMARIA INSERIDA JA EXISTE NA TABELA
+        do {
+            printf("Digite o valor para a chave primária: ");
+            fgets(buffer, sizeof(buffer), stdin);
+            chave = atoi(buffer);
+
+            chaveValida = verificarChave(tabela, chave);
+            if (!chaveValida) {
+                printf("Chave primária já existe. Por favor, insira uma chave primária única.\n");
+            }
+        } while (!chaveValida);
+        tabela->table[tabela->linhas - 1][0].intVal = chave;
+        for (int j = 1; j < tabela->colunas; j++) {
             printf("Digite o valor para a coluna '%s': ", tabela->nomeColuna[j]);
             fgets(buffer, 100, stdin); // Lê a entrada do usuário
-
-            // Verifica se o usuário digitou 'Pronto'
-            if (strcmp(buffer, "Pronto\n") == 0) {
+            // Verifica se o usuário digitou 'Fim'
+            if (strcmp(buffer, "Fim\n") == 0) {
                 continuar = false;
                 break;
             }
 
             // Processa a entrada com base no tipo de dado da coluna
-            switch (tabela->tiposColuna[j].tipo) {
+            switch (tabela->tiposColuna[j]) {
                 case INT_TYPE:
                     tabela->table[linhaAtual][j].intVal = atoi(buffer);
                     break;
                 case STRING_TYPE:
-                    strncpy(tabela->table[linhaAtual][j].strVal, buffer, TAMANHO_MAX_NOME);
+                    strncpy(tabela->table[linhaAtual][j].strVal, buffer, TAMANHO_MAX_NOME - 1);
                     tabela->table[linhaAtual][j].strVal[strcspn(tabela->table[linhaAtual][j].strVal, "\n")] = 0; // Remove a quebra de linha
                     break;
                 case FLOAT_TYPE:
@@ -269,19 +297,16 @@ void PegarDados(Tabela *tabela) {
         }
 
         if (continuar) {
-            // Adiciona uma nova linha à tabela se o usuário não digitou 'Pronto'
-            aumentarTabela(tabela);
             linhaAtual++;
         }
     }
 
-    // Ajusta o tamanho final da tabela
-    if (linhaAtual == 0) {
-        // Se nenhuma linha foi adicionada, remove a linha inicial
-        free(tabela->table[0]);
+    // Ajusta o tamanho final da tabela, se necessário
+    if (linhaAtual == -1) {
+        // Se nenhuma linha foi adicionada, não ajusta o tamanho
+        tabela->linhas = 0;
     } else {
-        // Ajusta o tamanho da tabela para o número de linhas preenchidas
-        tabela->linhas = linhaAtual;
+        tabela->linhas = linhaAtual+1;
     }
 }
 //CONVERTE O TIPO DE DADO DAS CELULAS PARA TEXTO LEGIVEL
@@ -298,43 +323,30 @@ const char* tipoParaString(DataType tipo) {
     }
 }
 //SALVA OS DADOS DE UMA TABELA EM UM ARQUIVO
-void salvarArquivo(Tabela *tabela) {
+void salvarArquivo(Tabela *tabela, const char *nomeArquivo) {
     if (tabela == NULL) {
         printf("A tabela é nula. Não é possível salvar.\n");
         return;
     }
 
-    char nomeArquivo[100];
-    snprintf(nomeArquivo, sizeof(nomeArquivo), "%s.csv", tabela->nome);
-    FILE *file = fopen(nomeArquivo, "w");
+    FILE *file = fopen(nomeArquivo, "a"); // Abre o arquivo para acréscimo
     if (file == NULL) {
         perror("Erro ao abrir o arquivo para salvar a tabela");
         return;
     }
 
-    // Escrevendo os tipos e os dados da primeira linha
+    fprintf(file, "Início da Tabela: %s\n", tabela->nome);
+    // Escrevendo os nomes e os tipos das colunas
     for (int j = 0; j < tabela->colunas; j++) {
-        fprintf(file, "%s:", tipoParaString(tabela->tiposColuna[j].tipo)); // Escreve o tipo da coluna
-        // Escreve o dado da primeira linha
-        switch (tabela->tiposColuna[j].tipo) {
-            case INT_TYPE:
-                fprintf(file, "%d", tabela->tiposColuna[j].dado.intVal);
-                break;
-            case STRING_TYPE:
-                fprintf(file, "\"%s\"", tabela->tiposColuna[j].dado.strVal);
-                break;
-            case FLOAT_TYPE:
-                fprintf(file, "%f", tabela->tiposColuna[j].dado.floatVal);
-                break;
-        }
+        fprintf(file, "%s(%s)", tabela->nomeColuna[j], tipoParaString(tabela->tiposColuna[j])); // Escreve o nome e o tipo da coluna
         if (j < tabela->colunas - 1) fprintf(file, ","); // Separador
     }
     fprintf(file, "\n");
 
-    // Escrevendo os dados das demais linhas
-    for (int i = 0; i < tabela->linhas - 1; i++) {
+    // Escrevendo os dados das linhas
+    for (int i = 0; i < tabela->linhas; i++) {
         for (int j = 0; j < tabela->colunas; j++) {
-            switch (tabela->tiposColuna[j].tipo) {
+            switch (tabela->tiposColuna[j]) {
                 case INT_TYPE:
                     fprintf(file, "%d", tabela->table[i][j].intVal);
                     break;
@@ -349,18 +361,19 @@ void salvarArquivo(Tabela *tabela) {
         }
         fprintf(file, "\n");
     }
-    fprintf(file, "End Of Table");
+    fprintf(file, "Fim da Tabela: %s\n", tabela->nome); // Marca o fim da tabela
     fclose(file);
-    printf("Tabela '%s' salva com sucesso.\n", tabela->nome);
+    printf("Tabela '%s' salva com sucesso no arquivo '%s'.\n", tabela->nome, nomeArquivo);
 }
 
 int main(){
-	int opcao, colunas;
+    int opcao, colunas;
     char nome[TAMANHO_MAX_NOME];
-    bool executando = true;
-
+    bool executando = true, aviso;
+    Tabela *lambda = NULL;
+    const char *ArquivoTabela = "tabelas.itp";
     while (executando) {
-       limparTela(); // Para Windows
+       limparTela(); // Para Qualquer Sistema;
 
         // Exibe o menu principal
         printf("========================================\n");
@@ -368,10 +381,20 @@ int main(){
         printf("========================================\n");
         printf("| 1. Criar Nova Tabela                  |\n");
         printf("| 2. Adicionar dados na tabela          |\n");
-        printf("| 3. Visualizar Tabelas                 |\n");
+        printf("| 3. Visualizar Tabela                  |\n");
         printf("| 4. Salvar Tabelas                     |\n");
         printf("| 5. Sair                               |\n");
         printf("========================================\n");
+        if (lambda != NULL)
+        {
+            printf("Tabela selecionada: %s\n", lambda->nome);
+        }
+        if (aviso)
+        {
+            printf("Nenhuma tabela selecionada.\n");
+            printf("Crie uma nova tabela ou carregue alguma existente.\n");
+            aviso  = false;
+        }
         printf("Escolha uma opção: ");
         scanf("%d", &opcao);
         getchar(); // Limpa o buffer de entrada
@@ -384,20 +407,41 @@ int main(){
                 printf("Quantas Colunas você quer na sua tabela? \n");
                 scanf("%d", &colunas);
                 getchar();
-                Tabela lambda = criarTabela(1, colunas, nome);
+                if (lambda != NULL) {
+                    liberarTabela(lambda); // Libera a tabela anterior se existir
+                }
+                lambda = criarTabela(1, colunas, nome);
                 break;
             case 2:
-                printf("Quando você não quiser mais adicionar dados a tabela digite -> Pronto <-\n");
-                PegarDados(&lambda);
+                if (lambda != NULL)
+                {
+                    printf("Quando você não quiser mais adicionar dados a tabela digite -> Fim <-\n");
+                    PegarDados(lambda);
+                }else{
+                    aviso = true;
+                }
                 break;
             case 3:
-                mostrarTabela(&lambda);
+                if (lambda != NULL)
+                {
+                  mostrarTabela(lambda);  
+                }else{
+                    aviso = true;
+                }
                 break;
             case 4:
-
+                if (lambda != NULL)
+                {
+                   salvarArquivo(lambda, ArquivoTabela); 
+                }else{
+                    aviso = true;
+                }
                 break;
             case 5:
                 executando = false;
+                if (lambda != NULL) {
+                    liberarTabela(lambda);
+                }
                 printf("Saindo do programa...\n");
                 break;
             default:
