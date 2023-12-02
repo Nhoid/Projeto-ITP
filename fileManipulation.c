@@ -8,29 +8,63 @@
 #include <ctype.h>
 
 //SALVA OS DADOS DE UMA TABELA EM UM ARQUIVO
-void salvarArquivo(Tabela *tabela, const char *nomeArquivo) {
+void salvarArquivo(Tabela *tabela) {
+    //ITERAVEIS
+    int i,j,k;
+
     if (tabela == NULL) {
         printf("A tabela é nula. Não é possível salvar.\n");
         return;
     }
 
-    FILE *file = fopen(nomeArquivo, "a"); // Abre o arquivo para acréscimo
+    FILE *file = fopen("tabelas.itp", "a"); // Abre o arquivo para acréscimo
     if (file == NULL) {
         perror("Erro ao abrir o arquivo para salvar a tabela");
         return;
     }
 
-    fprintf(file, "Início da Tabela: %s\n", tabela->nome);
-    // Escrevendo os nomes e os tipos das colunas
-    for (int j = 0; j < tabela->colunas; j++) {
-        fprintf(file, "%s(%s)", tabela->nomeColuna[j], tipoParaString(tabela->tiposColuna[j])); // Escreve o nome e o tipo da coluna
-        if (j < tabela->colunas - 1) fprintf(file, ","); // Separador
-    }
-    fprintf(file, "\n");
+    //ESCREVENDO TABELA
 
-    // Escrevendo os dados das linhas
-    for (int i = 0; i < tabela->linhas; i++) {
-        for (int j = 0; j < tabela->colunas; j++) {
+    //NOME DA TABELA
+    fprintf(file, "\"Nomedatabela:\",\"%s\"\n", tabela->nome);
+    //SAIDA: "Nomedatabela:","MIGUEL"
+
+    //Separador de informações da tabela <-->
+    fprintf(file, "<-->\n");
+
+    //Informações da tabela
+    fprintf(file, "\"Linhas:\",%d\n", tabela->linhas);
+    fprintf(file, "\"Colunas:\",%d\n", tabela->colunas);
+
+    //Tipos das colunas
+    for(i = 0;i < tabela->colunas;i++){
+        switch (tabela->tiposColuna[i]) {
+                case STRING_TYPE:
+                    fprintf(file, "1");
+                    break;
+                case INT_TYPE:
+                    fprintf(file, "2");
+                    break;
+                case FLOAT_TYPE:
+                    fprintf(file, "3");
+                    break;
+            }
+        (i != tabela->colunas-1) ? fprintf(file, ",") : fprintf(file, "\n");
+    }
+
+    //Separador de informações da tabela <-->
+    fprintf(file, "<-->\n");
+
+    //Nome das colunas
+    for(i = 0; i < tabela->colunas;i++){
+        fprintf(file, "\"%s\"", tabela->nomeColuna[i]);
+        //Se ainda tiver colunas digita "," senão pula a linha
+        (i != tabela->colunas-1) ? fprintf(file, ",") : fprintf(file, "\n");
+    }
+
+    //Informações das celulas
+    for(i = 0; i < tabela->linhas-1;i++){
+        for(j = 0; j < tabela->colunas;j++){
             switch (tabela->tiposColuna[j]) {
                 case INT_TYPE:
                     fprintf(file, "%d", tabela->table[i][j].intVal);
@@ -42,11 +76,32 @@ void salvarArquivo(Tabela *tabela, const char *nomeArquivo) {
                     fprintf(file, "%f", tabela->table[i][j].floatVal);
                     break;
             }
-            if (j < tabela->colunas - 1) fprintf(file, ",");
+            if(j != tabela->colunas-1){
+                fprintf(file, ",");
+            }
         }
-        fprintf(file, "\n");
+        fprintf(file,"\n");
     }
-    fprintf(file, "Fim da Tabela: %s\n", tabela->nome); // Marca o fim da tabela
+
+
+    //Separador de tabela <--->
+    fprintf(file, "<--->\n");
+
     fclose(file);
-    printf("Tabela '%s' salva com sucesso no arquivo '%s'.\n", tabela->nome, nomeArquivo);
+    /*
+    MENSAGEM RETIRADA POR CONTA DA NATUREZA DA LIMPEZA DE TELA
+    printf("Tabela '%s' salva com sucesso no arquivo 'tabelas.itp'.\n", tabela->nome);
+    */
 }
+
+
+//ESTRUTURA DE UMA TABELA
+/*
+typedef struct {
+    char nome[TAMANHO_MAX_NOME];
+    char **nomeColuna;
+    DataType *tiposColuna; // Primeira linha com tipos e dados
+    Celula **table; // Restante das linhas com apenas dados
+    int linhas, colunas;
+} Tabela;
+*/

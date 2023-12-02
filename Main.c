@@ -18,7 +18,6 @@ int main(){
     char nome[TAMANHO_MAX_NOME];
     bool executando = true, aviso = false;
     Tabela *lambda = NULL;
-    const char *ArquivoTabela = "tabelas.itp";
     while (executando) {
        limparTela(); // Para Qualquer Sistema;
 
@@ -106,7 +105,7 @@ int main(){
                 break;
             case 6:
                 if (lambda != NULL) {
-                    salvarArquivo(lambda, ArquivoTabela);
+                    salvarArquivo(lambda);
                 }else{aviso = true;}
                 break;
             case 7:
