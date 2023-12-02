@@ -1,6 +1,17 @@
 #include <stdio.h>
 #include <stddef.h>
-#include "function.h" // INCLUI ARQUIVO SEPARADO COM TODAS AS FUNÇÕES
+#include "memoryAllocation.h" // FUNÇÕES DE CONTROLE DE MEMORIA
+#include "tableManipulation.h" // FUÇÕES DE MANIPULAÇÃO DE TABELA
+#include "fileManipulation.h" // FUNÇÕES DE MANIPULAÇÃO DE ARQUIVO
+
+//limpa a tela
+void limparTela() {
+    #ifdef _WIN32
+    system("cls");
+    #else
+    system("clear");
+    #endif
+}
 
 int main(){
     int opcao, colunas, chave;
