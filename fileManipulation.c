@@ -9,7 +9,8 @@
 
 
 
-void removerTabela(Tabela *tabela) {
+void removerTabela(Tabela *tabela) 
+{
     FILE *arquivoEntrada, *arquivoSaida;
     char linha[1000];
 
@@ -66,7 +67,8 @@ void removerTabela(Tabela *tabela) {
 }
 
 //SALVA OS DADOS DE UMA TABELA EM UM ARQUIVO
-void salvarArquivo(Tabela *tabela) {
+void salvarArquivo(Tabela *tabela) 
+{
     // ITERAVEIS
     int i, j, k;
 
@@ -159,14 +161,15 @@ void salvarArquivo(Tabela *tabela) {
 
 
 
-void listarTabelas() {
+void listarTabelas() 
+{
     FILE *file = fopen("tabelas.itp", "r+");
     if (file == NULL) {
-        perror("Erro ao abrir o arquivo para salvar a tabela");
+        perror("Erro ao abrir o arquivo");
         return;
     }
 
-    char linha[9999];
+    char linha[1024];
     long posicaoAtual = 0; // Inicializa a posição atual do ponteiro do arquivo
 
     // Lê cada linha do arquivo
@@ -203,96 +206,107 @@ void listarTabelas() {
 }
 
 
-void carregarTabela(Tabela *tabela, char nomeProcurado[TAMANHO_MAX_NOME]) {
-    FILE *file = fopen("tabelas.itp", "r+");
-    if (file == NULL) {
-        perror("Erro ao abrir o arquivo para salvar a tabela");
-        return;
+Tabela* carregarTabela(const char* nomeTabela) {
+    FILE* arquivo = fopen("tabelas.itp", "r");
+    if (arquivo == NULL) {
+        perror("Erro ao abrir o arquivo");
+        return NULL;
     }
+    char vacuo[1024];
+    char linha[1024];
+    bool encontrouTabela = false;
 
-    char linha[9999];
-    long posicaoAtual = 0; // Inicializa a posição atual do ponteiro do arquivo
-
-    while (fgets(linha, sizeof(linha), file) != NULL) {
-        linha[strcspn(linha, "\n")] = '\0';
-
-        // Verifica se a linha contém o nome desejado
-        if (strstr(linha, nomeProcurado) != NULL) {
-            printf("Nome encontrado: %s\n", nomeProcurado);
-            fseek(file, posicaoAtual, SEEK_SET); // Move o ponteiro para a posição correta
-            printf("Ponteiro do arquivo movido para a posição: %ld\n", posicaoAtual);
-
-            // Leitura do restante das informações da tabela
-            fscanf(file, "<-->\nLinhas: %d\nColunas: %d\n", &tabela->linhas, &tabela->colunas);
-
-            // Alocar memória para as estruturas da tabela
-            tabela->nomeColuna = malloc(tabela->colunas * sizeof(char *));
-            tabela->tiposColuna = malloc(tabela->colunas * sizeof(DataType));
-            tabela->table = malloc(tabela->linhas * sizeof(Celula *));
-            for (int i = 0; i < tabela->linhas; i++) {
-                tabela->table[i] = malloc(tabela->colunas * sizeof(Celula));
-            }
-
-            // Leitura dos nomes das colunas
-            fscanf(file, "<-->\n");
-            tabela->nomeColuna[0] = malloc(TAMANHO_MAX_NOME);
-            for (int i = 0; i < tabela->colunas; i++) {
-                fscanf(file, "%[^,],", tabela->nomeColuna[i]);
-                tabela->nomeColuna[i + 1] = malloc(TAMANHO_MAX_NOME);
-            }
-
-            // Leitura dos tipos de dados das colunas
-            for (int i = 0; i < tabela->colunas; i++) {
-                char tipo[20];
-                fscanf(file, "%[^,],", tipo);
-                if (strcmp(tipo, "int") == 0) {
-                    tabela->tiposColuna[i] = INT_TYPE;
-                } else if (strcmp(tipo, "string") == 0) {
-                    tabela->tiposColuna[i] = STRING_TYPE;
-                } else if (strcmp(tipo, "float") == 0) {
-                    tabela->tiposColuna[i] = FLOAT_TYPE;
-                }
-            }
-
-            // Leitura dos dados da tabela
-            for (int i = 0; i < tabela->linhas; i++) {
-                fscanf(file, "<-->\n");
-                for (int j = 0; j < tabela->colunas; j++) {
-                    switch (tabela->tiposColuna[j]) {
-                        case INT_TYPE:
-                            fscanf(file, "%d,", &tabela->table[i][j].intVal);
-                            break;
-                        case STRING_TYPE:
-                            fscanf(file, "%[^,],", tabela->table[i][j].strVal);
-                            break;
-                        case FLOAT_TYPE:
-                            fscanf(file, "%f,", &tabela->table[i][j].floatVal);
-                            break;
-                    }
-                }
-            }
-
-            fclose(file);
-            return;
+    while (fgets(linha, sizeof(linha), arquivo)) {
+        if (strstr(linha, "Nomedatabela:") && strstr(linha, nomeTabela)) {
+            encontrouTabela = true;
+            break;
         }
-
-        posicaoAtual = ftell(file); // Atualiza a posição atual do ponteiro do arquivo
     }
 
-    fclose(file);
-    printf("Tabela Não Encontrada.\n");
-}
+    if (!encontrouTabela) {
+        printf("Tabela '%s' não encontrada no arquivo '%s'.\n", nomeTabela, "tabelas.itp");
+        fclose(arquivo);
+        return NULL;
+    }
+    fgets(vacuo, sizeof(vacuo), arquivo); // limpa o separador
+   //fgets(linha, sizeof(linha), arquivo);
 
-
-
-
-//ESTRUTURA DE UMA TABELA
-/*
-typedef struct {
-    char nome[TAMANHO_MAX_NOME];
-    char **nomeColuna;
-    DataType *tiposColuna; // Primeira linha com tipos e dados
-    Celula **table; // Restante das linhas com apenas dados
     int linhas, colunas;
-} Tabela;
-*/
+    if (fscanf(arquivo, "Linhas: %d\nColunas: %d\n", &linhas, &colunas) != 2) {
+        fprintf(stderr, "Erro na leitura das dimensões da tabela.\n");
+        fclose(arquivo);
+        return NULL;
+    }
+    Tabela* tabela = alocarTabela(linhas, colunas);
+    alocarMemoriaTabela(tabela);
+
+    strncpy(tabela->nome, nomeTabela, TAMANHO_MAX_NOME - 1);
+    tabela->nome[TAMANHO_MAX_NOME - 1] = '\0';
+
+    fgets(linha, sizeof(linha), arquivo); // Lê a linha dos tipos
+
+    char* token = strtok(linha, ",");
+    for (int i = 0; i < colunas; i++) {
+        if (token == NULL) {
+            fprintf(stderr, "Erro na leitura dos tipos de colunas.\n");
+            fclose(arquivo);
+            return NULL;
+        }
+        int tipo = atoi(token);
+        switch(tipo)
+        {
+        case 1: tabela->tiposColuna[i] = STRING_TYPE; break;
+        case 2: tabela->tiposColuna[i] = INT_TYPE; break;
+        case 3: tabela->tiposColuna[i] = FLOAT_TYPE; break;
+        default: tabela->tiposColuna[i] = STRING_TYPE; break;
+        }
+        token = strtok(NULL, ",");
+    }
+    fgets(vacuo, sizeof(vacuo), arquivo); // limpa o separador
+    fgets(linha, sizeof(linha), arquivo); // Lê a linha dos nomes das colunas
+
+    token = strtok(linha, ",");
+    for (int i = 0; i < colunas; i++) {
+        if (token == NULL) {
+            fprintf(stderr, "Erro na leitura dos nomes das colunas.\n");
+            fclose(arquivo);
+            return NULL;
+        }
+        token[strcspn(token, "\n")] = '\0';
+        tabela->nomeColuna[i] = strdup(token);
+        token = strtok(NULL, ",");
+    }
+
+    for (int i = 0; i < linhas-1; i++) {
+    if (fgets(linha, sizeof(linha), arquivo) == NULL) {
+        fprintf(stderr, "Erro ao ler dados da tabela.\n");
+        fclose(arquivo);
+        return NULL;
+    }
+    // Remova ou mova esta linha para antes do strtok se for apenas para depuração
+    char* token = strtok(linha, ",");
+    for (int j = 0; j < colunas; j++) {
+        if (token == NULL) {
+            fprintf(stderr, "Erro na leitura dos dados da tabela.\n");
+
+            fclose(arquivo);
+            return NULL;
+        }
+        switch (tabela->tiposColuna[j]) {
+            case STRING_TYPE:
+                strncpy(tabela->table[i][j].strVal, token, TAMANHO_MAX_NOME - 1);
+                tabela->table[i][j].strVal[TAMANHO_MAX_NOME - 1] = '\0';
+                break;
+            case INT_TYPE:
+                tabela->table[i][j].intVal = atoi(token);
+                break;
+            case FLOAT_TYPE:
+                tabela->table[i][j].floatVal = atof(token);
+                break;
+        }
+        token = strtok(NULL, ",");
+    }
+}
+    fclose(arquivo);
+    return tabela;
+}

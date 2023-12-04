@@ -8,7 +8,7 @@
 void salvarArquivo(Tabela *tabela);
 
 //CARREGA DADOS DE UMA TABELA DE UM ARQUIVO
-void carregarTabela(Tabela *tabela, char nome[TAMANHO_MAX_NOME]);
+Tabela* carregarTabela(const char* nomeTabela);
 
 //LISTA DADOS DAS TABELAS DE UM ARQUIVO
 void listarTabelas();

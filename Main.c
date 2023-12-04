@@ -30,15 +30,15 @@ int main(){
     fclose(arquivo);
     int opcao, colunas, chave;
     char nome[TAMANHO_MAX_NOME];
-    bool executando = true, aviso = false;
+    bool executando = true, aviso = false, tabelaCarregada = false, salvo = false;
     Tabela *lambda = NULL;
     while (executando) {
-       //limparTela(); // Para Qualquer Sistema;
+        limparTela(); // Para Qualquer Sistema;
 
         // Exibe o menu principal
         printf("========================================\n");
         printf("|             MENU PRINCIPAL            |\n");
-        printf("========================================\n");
+        printf("========================================\n");// CRIADORES
         printf("| 1. Criar Nova Tabela                  |      Feito Por:\n");
         printf("| 2. Adicionar dados na tabela          |\n");
         printf("| 3. Visualizar Tabela                  |    Geraldo Filho\n");
@@ -48,23 +48,35 @@ int main(){
         printf("| 7. Selecionar Tabela                  |\n");
         printf("| 8. Listar Tabelas                     |\n");
         printf("| 9. Sair                               |\n");
-        printf("========================================\n");
+        printf("========================================");
         if (lambda != NULL)
         {
-            printf("Tabela selecionada: %s\n", lambda->nome);
-        }else if (!aviso) {printf("Nenhuma tabela selecionada ou criada.\n");}
+            printf("=> Tabela selecionada: %s\n", lambda->nome); //MOSTRA TABELA SELECIONADA
+        }else if (!aviso) 
+        {
+        printf("=> Nenhuma tabela selecionada ou criada.\n"); 
+        }
         if (aviso)
         {
-            printf("Nenhuma tabela selecionada.\n");
+            printf("Nenhuma tabela selecionada.\n");// AVISO DE NÃO TER TABELA SELECIONADA
             printf("Crie uma nova tabela ou carregue alguma existente.\n");
             aviso  = false;
+        }if (tabelaCarregada)
+        {
+            printf("Tabela %s carregada com sucesso.\n", lambda->nome);//AVISO SOBRE TABELA TER SIDO CARREGADA COM SUCESSO
+            tabelaCarregada = false;
+        }if (salvo)
+        {
+            printf("Tabela %s salva com sucesso.\n", lambda->nome); // AVISO SOBRE TABELA TER SIDO SALVA COM SUCESSO
         }
+
+        //PEGAR ESCOLHA
         printf("Escolha uma opção: ");
         scanf("%d", &opcao);
         getchar(); // Limpa o buffer de entrada
 
         switch (opcao) {
-            case 1:
+            case 1: //CRIAR UMA TABELA
                 limparTela();
                 printf("Qual Nome da Tabela? \n");
                 scanf(" %49s", nome);
@@ -75,9 +87,9 @@ int main(){
                 if (lambda != NULL) {
                     liberarTabela(lambda); // Libera a tabela anterior se existir
                 }
-                lambda = criarTabela(1, colunas, nome);
+                lambda = construtorTabela(1, colunas, nome);
                 break;
-            case 2:
+            case 2: // ADICIONAR DADOS A TABELA
                 if (lambda != NULL)
                 {
                     limparTela();
@@ -88,7 +100,7 @@ int main(){
                     aviso = true;
                 }
                 break;
-            case 3:
+            case 3://MOSTRAR TABELA NA TELA
                 if (lambda != NULL)
                 {
                     printf("Tabela selecionada: %s\n", lambda->nome);
@@ -98,7 +110,7 @@ int main(){
                     aviso = true;
                 }
                 break;
-            case 4:
+            case 4://REMOVER LINHA DA TABELA
                 if (lambda != NULL)
                 {
                     limparTela();
@@ -110,7 +122,7 @@ int main(){
                     aviso = true;
                 }
                 break;
-            case 5:
+            case 5://PESQUISAR POR VALORES NA TABELA
                 limparTela();
                 if (lambda != NULL)
                 {
@@ -119,29 +131,30 @@ int main(){
                     aviso = true;
                 }
                 break;
-            case 6:
+            case 6://SALVAR TABELA NO BANCO DE DADOS
                 if (lambda != NULL) {
                     salvarArquivo(lambda);
                 }else{aviso = true;}
                 break;
-            case 7:
+            case 7://CARREGAR ALGUMA TABELA DO BANCO DE DADOS
                 //depois que criar o listar tabelas, pode colocar aqui em cima os nomes
                 printf("Digite o nome de uma tabela: ");
                 if (fgets(nome, sizeof(nome), stdin) != NULL) {
                     // Removendo o caractere de nova linha, se presente
                     nome[strcspn(nome, "\n")] = '\0';
+                    tabelaCarregada = true;
                 } else {
                     printf("Erro ao ler a entrada.\n");
                 }
                 if(lambda != NULL) {
                     liberarTabela(lambda); // Libera a tabela anterior se existir
                 }
-                carregarTabela(lambda,nome);
+                lambda = carregarTabela(nome);
                 break;
-            case 8:
+            case 8://LISTAR TODAS AS TABELAS EXISTENTES NO BANCO DE DADOS
                 listarTabelas();
                 break;
-            case 9:
+            case 9://SAIR DO PROGRAMA
                 executando = false;
                 if (lambda != NULL) {
                     liberarTabela(lambda);

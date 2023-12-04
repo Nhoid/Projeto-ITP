@@ -28,13 +28,20 @@ typedef struct {
     int linhas, colunas;
 } Tabela;
 
+//Apenas define os primeiros parametros da
+Tabela* alocarTabela(int linhas,int colunas);
+
+//ALOCA A MEMORIA DA TABLE
+void alocarMemoriaTabela(Tabela* tabela);
+
 //Construtor tabela
-Tabela* criarTabela(int linhas, int colunas, char nome[]);
+Tabela* construtorTabela(int linhas, int colunas, char nome[]);
 
 //AUMENTA A TABELA QUANDO NECESSARIO, AUMENTA UMA LINHA DE CADA VEZ
 void aumentarTabela(Tabela *tabela);
 
 //LIBERA A MEMORIA DE TABELAS
 void liberarTabela(Tabela *tabela);
+
 
 #endif
