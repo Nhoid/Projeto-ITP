@@ -150,3 +150,32 @@ void liberarTabela(Tabela *tabela)
     }
     free(tabela->table);
 }
+
+QuadroDeAvisos *inicializarQuadroDeAvisos() {
+    QuadroDeAvisos *dados = malloc(sizeof(QuadroDeAvisos));
+    
+    if (dados != NULL) {
+        dados->linhaAviso = (int *)calloc(1, sizeof(int));
+        *dados->linhaAviso = 0;
+
+        dados->executando = (int *)calloc(1, sizeof(int));
+        *dados->executando = 1;
+
+        dados->aviso = (int *)calloc(1, sizeof(int));
+        *dados->aviso = 0;
+
+        dados->tabelaCarregada = (int *)calloc(1, sizeof(int));
+        *dados->tabelaCarregada = 0;
+
+        dados->salvo = (int *)calloc(1, sizeof(int));
+        *dados->salvo = 0;
+
+        dados->quadroAvisosAtivo = (int *)calloc(1, sizeof(int));
+        *dados->quadroAvisosAtivo = 0;
+
+        dados->invalido = (int *)calloc(1, sizeof(int));
+        *dados->invalido = 0;
+    }
+
+    return dados;
+}

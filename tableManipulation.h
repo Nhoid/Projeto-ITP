@@ -16,6 +16,9 @@ bool comparaString(const char* valorTabela, const char* valorPesquisado, char op
 //VERIFICA SE JÁ TEM DETERMINADA CHAVE PRIMÁRIA REGISTRADA NA TABELA
 bool verificarChave(Tabela *tabela, int chave);
 
+char *criar_copia_sem_acentos(const char *str, int *tamanho);
+char remove_acento(char c, int *tamanho);
+
 //CALCULAR PROPORÇÃO DA TABELA
 void calcularLarguraColunas(Tabela *tabela, int *larguras);
 

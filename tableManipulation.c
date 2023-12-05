@@ -56,12 +56,43 @@ bool verificarChave(Tabela *tabela, int chave)
     return true;
 } 
 
-//CALCULAR PROPORÇÃO DA TABELA
+//REMOVE ACENTO DA LETRA QUE FOI DADO COMO ENTRADA
+char remove_acento(char c, int *tamanho) {
+    // Lista de caracteres acentuados e seus equivalentes não acentuados
+    const char *com_acento = "áéíóúàèìòùâêîôûäëïöüãõñç";
+    const char *sem_acento = "aeiouaeiouaeiouaeiouaonc";
+    
+    for (int i = 0; com_acento[i] != '\0'; i++) {
+        if (c == com_acento[i]) {
+            (*tamanho)--;
+            return sem_acento[i];
+        }
+    }
+
+    return c; // Retorna o próprio caractere se não for acentuado
+}
+
+//CONSTROI TODA A STRING DE ENTRADA EM UMA SEM ACENTUAÇÃO
+char *criar_copia_sem_acentos(const char *str, int *tamanho) {
+    char *copia = malloc(strlen(str) + 1); // Aloca memória para a cópia
+    int voide;
+    if (copia == NULL) {
+        perror("Erro ao alocar memória");
+        exit(EXIT_FAILURE);
+    }
+
+    for (int i = 0; str[i] != '\0'; i++) {
+        copia[i] = remove_acento(str[i], &voide);
+    }
+    copia[strlen(str)] = '\0'; // Certifica-se de terminar a string corretamente
+    return copia;
+}
+
+//CALCULA A LARGURA NECESSARIA PARA CADA TABELA
 void calcularLarguraColunas(Tabela *tabela, int *larguras) {
     for (int j = 0; j < tabela->colunas; j++) {
-        larguras[j] = strlen(tabela->nomeColuna[j]); // Inicializa com o tamanho do nome da coluna
-
-        for (int i = 0; i < tabela->linhas - 1; i++) {
+        larguras[j] = strlen(tabela->nomeColuna[j]);
+        for (int i = 0; i < tabela->linhas; i++) {
             int tamanhoCelula = 0;
             switch (tabela->tiposColuna[j]) {
                 case INT_TYPE:
@@ -74,12 +105,15 @@ void calcularLarguraColunas(Tabela *tabela, int *larguras) {
                     tamanhoCelula = snprintf(NULL, 0, "%.2f", tabela->table[i][j].floatVal);
                     break;
             }
+            tamanhoCelula += 1; // Adiciona espaçamento para a formatação da tabela
+
             if (tamanhoCelula > larguras[j]) {
                 larguras[j] = tamanhoCelula;
             }
         }
     }
 }
+
 
 //CONVERTE O TIPO DE DADO DAS CELULAS PARA TEXTO LEGIVEL
 const char* tipoParaString(DataType tipo) {
@@ -244,6 +278,8 @@ void pesquisaValor(Tabela *tabela) {
 //PRINTAR A TABELA
 void mostrarTabela(Tabela *tabela) {
     int p = 1;
+    bool acento=false;
+    int diferenca, tamanho;
     if (tabela->linhas == 0) {
         printf("A tabela está vazia.\n");
         return;
@@ -254,7 +290,14 @@ void mostrarTabela(Tabela *tabela) {
 
     // Imprime o cabeçalho da tabela
     for (int j = 0; j < tabela->colunas; j++) {
-        printf("| %-*s ", larguras[j], tabela->nomeColuna[j]);
+        tamanho = strlen(tabela->nomeColuna[j]);
+        diferenca = 0;
+        char sup;
+        for (int i = 0; i < tamanho; i++)
+        {
+            sup = remove_acento(tabela->nomeColuna[j][i], &diferenca);
+        }
+        printf("| %-*s ", larguras[j]-(diferenca/2), tabela->nomeColuna[j]);
     }
     printf("|\n");
 
@@ -275,7 +318,13 @@ void mostrarTabela(Tabela *tabela) {
                     printf("| %-*d ", larguras[j], tabela->table[i][j].intVal);
                     break;
                 case STRING_TYPE:
-                    printf("| %-*s ", larguras[j], tabela->table[i][j].strVal);
+                    tamanho = strlen(tabela->table[i][j].strVal), diferenca = 0;
+                    char sup;
+                    for (int k = 0; k < tamanho; k++)
+                    {
+                        sup = remove_acento(tabela->table[i][j].strVal[k], &diferenca);
+                    }
+                    printf("| %-*s ", larguras[j]-(diferenca/2), tabela->table[i][j].strVal);
                     break;
                 case FLOAT_TYPE:
                     printf("| %-*.2f ", larguras[j], tabela->table[i][j].floatVal);

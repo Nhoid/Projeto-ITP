@@ -294,6 +294,7 @@ Tabela* carregarTabela(const char* nomeTabela) {
         }
         switch (tabela->tiposColuna[j]) {
             case STRING_TYPE:
+                token[strcspn(token, "\n")] = '\0';
                 strncpy(tabela->table[i][j].strVal, token, TAMANHO_MAX_NOME - 1);
                 tabela->table[i][j].strVal[TAMANHO_MAX_NOME - 1] = '\0';
                 break;

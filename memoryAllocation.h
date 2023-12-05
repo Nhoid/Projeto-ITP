@@ -28,6 +28,17 @@ typedef struct {
     int linhas, colunas;
 } Tabela;
 
+//ESTRUTURA DO QUADRO DE AVISOS
+typedef struct {
+    int *linhaAviso;
+    int *executando;
+    int *aviso;
+    int *tabelaCarregada;
+    int *salvo;
+    int *quadroAvisosAtivo;
+    int *invalido;
+} QuadroDeAvisos;
+
 //Apenas define os primeiros parametros da
 Tabela* alocarTabela(int linhas,int colunas);
 
@@ -42,6 +53,9 @@ void aumentarTabela(Tabela *tabela);
 
 //LIBERA A MEMORIA DE TABELAS
 void liberarTabela(Tabela *tabela);
+
+//CONSTROI O QUADRO DE AVISOS
+QuadroDeAvisos *inicializarQuadroDeAvisos();
 
 
 #endif
