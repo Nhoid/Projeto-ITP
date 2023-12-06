@@ -7,4 +7,6 @@ void tabelaSelecionada(Tabela *tabela); //MOSTRA DINAMICAMENTE QUAL TABELA ESTA 
 
 void quadroDeAvisos(Tabela *tabela, QuadroDeAvisos *quadrodeavisos); //GERENCIA O QUADRO DE AVISOS
 
+void interfaceCriarTabela(Tabela **lambda);
+
 #endif

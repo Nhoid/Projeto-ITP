@@ -5,30 +5,16 @@
 #include "tableManipulation.h" // FUÇÕES DE MANIPULAÇÃO DE TABELA
 #include "fileManipulation.h" // FUNÇÕES DE MANIPULAÇÃO DE ARQUIVO
 #include "visualManipulation.h" //FUNÇÕES DE MANIPULAÇÃO VISUAL
+#include "utils.h" //FUNÇÕES DE PRE PROCESSAMENTO REUTILIZAVEIS
 
 
-//INICIO DAS DIRETIVAS DE PRE PROCESSAMENTO
-//Inclui o windows.h quando esta sendo executado no windows
+//INICIO DAS DIRETIVAS DE PRE PROCESSAMENTO NA maiN
+//Ajusta as definições de caracteres do programa
 #ifdef _WIN32
 #include <windows.h>
 #else
 #include <unistd.h>
 #endif
-//limpa a tela
-void limparTela() {
-    #ifdef _WIN32
-    system("cls");
-    #else
-    system("clear");
-    #endif
-}
-void esperarTempo(int tempo){
-    #ifdef _WIN32
-    Sleep(tempo * 1000);  // Pausa a execução por 5000 milissegundos (5 segundos)
-    #else
-    sleep(tempo);     // Pausa a execução por 5 segundos
-    #endif
-}
 //FIM DAS DIRETIVAS DE PRE PROCESSAMENTO
 
 
@@ -41,8 +27,7 @@ int main(){
     fclose(arquivo);
 
     
-
-    //Alocando memorias para o quadro de avisos
+    //Alocando memorias para o quadro de avisos e inicializando
     QuadroDeAvisos *quadrodeavisos = inicializarQuadroDeAvisos();
 
 
@@ -50,7 +35,8 @@ int main(){
     char nome[TAMANHO_MAX_NOME];
 
     Tabela *lambda = NULL;
-    while (*(quadrodeavisos->executando)) {
+    while (*(quadrodeavisos->executando)) 
+    {
         limparTela(); // Para Qualquer Sistema;
         // Exibe o menu principal
         printf("=======================================================================\n");
@@ -78,26 +64,17 @@ int main(){
         *(quadrodeavisos->salvo) = 0;
         *(quadrodeavisos->invalido) = 0;
 
-        
 
         //PEGAR ESCOLHA
         printf("Escolha uma opção: ");
         scanf("%d", &opcao);
         getchar(); // Limpa o buffer de entrada
 
-        switch (opcao) {
+        switch (opcao) 
+        {
             case 1: //CRIAR UMA TABELA
                 limparTela();
-                printf("Qual Nome da Tabela? \n");
-                scanf(" %49s", nome);
-                getchar();
-                printf("Quantas Colunas você quer na sua tabela? \n");
-                scanf("%d", &colunas);
-                getchar();
-                if (lambda != NULL) {
-                    liberarTabela(lambda); // Libera a tabela anterior se existir
-                }
-                lambda = construtorTabela(1, colunas, nome);
+                interfaceCriarTabela(&lambda);
                 break;
             case 2: // CARREGAR TABELA
                 printf("Digite o nome de uma tabela: ");
@@ -106,7 +83,8 @@ int main(){
                 } else {
                     printf("Erro ao ler a entrada.\n");
                 }
-                if(lambda != NULL) {
+                if(lambda != NULL) 
+                {
                     liberarTabela(lambda); // Libera a tabela anterior se existir
                 }
                 lambda = carregarTabela(nome);
@@ -123,7 +101,8 @@ int main(){
                     printf("Tabela selecionada: %s\n", lambda->nome);
                     printf("Quando você não quiser mais adicionar dados a tabela digite -> Fim <-\n");
                     PegarDados(lambda);
-                }else{
+                }else
+                {
                     *(quadrodeavisos->aviso) = 1;
                     *(quadrodeavisos->quadroAvisosAtivo) = 1;
                 }
@@ -134,7 +113,8 @@ int main(){
                     printf("Tabela selecionada: %s\n", lambda->nome);
                     limparTela();
                     mostrarTabela(lambda);  
-                }else{
+                }else
+                {
                     *(quadrodeavisos->aviso) = 1;
                     *(quadrodeavisos->quadroAvisosAtivo) = 1;
                 }
@@ -148,7 +128,8 @@ int main(){
                     printf("Qual a chave da linha que você quer apagar da tabela '%s': \n", lambda->nome);
                     scanf("%d", &chave);
                     removerLinhaPorChave(lambda, chave);
-                }else{
+                }else
+                {
                     *(quadrodeavisos->aviso) = 1;
                     *(quadrodeavisos->quadroAvisosAtivo) = 1;
                 }
@@ -158,21 +139,27 @@ int main(){
                 if (lambda != NULL)
                 {
                     pesquisaValor(lambda);
-                }else{
+                }else
+                {
                     *(quadrodeavisos->aviso) = 1;
                     *(quadrodeavisos->quadroAvisosAtivo) = 1;
                 }
                 break;
             case 8://SALVA TABELA NO BANCO DE DADOS
-                if (lambda != NULL) {
+                if (lambda != NULL) 
+                {
                     salvarArquivo(lambda);
                     *(quadrodeavisos->salvo) = 1;
                     *(quadrodeavisos->quadroAvisosAtivo) = 1;
-                }else{*(quadrodeavisos->aviso) = 1; *(quadrodeavisos->quadroAvisosAtivo) = 1;}
+                }else
+                {
+                    *(quadrodeavisos->aviso) = 1; *(quadrodeavisos->quadroAvisosAtivo) = 1;
+                }
                 break;
             case 9://SAIR DO PROGRAMA
                 *(quadrodeavisos->executando) = 0;
-                if (lambda != NULL) {
+                if (lambda != NULL) 
+                {
                     liberarTabela(lambda);
                 }
                 printf("Saindo do programa...\n");

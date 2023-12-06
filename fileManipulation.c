@@ -19,22 +19,26 @@ void removerTabela(Tabela *tabela)
 
     // Abrir o arquivo de entrada
     arquivoEntrada = fopen("tabelas.itp", "r+");
-    if (arquivoEntrada == NULL) {
+    if (arquivoEntrada == NULL) 
+    {
         perror("Erro ao abrir o arquivo de entrada");
         return;
     }
 
     // Abrir um novo arquivo de saída
     arquivoSaida = fopen("novoarquivo.txt", "w");
-    if (arquivoSaida == NULL) {
+    if (arquivoSaida == NULL) 
+    {
         perror("Erro ao abrir o arquivo de saída");
         fclose(arquivoEntrada);
         return;
     }
 
     // Copiar linhas até encontrar a tabela com o nome desejado
-    while (fgets(linha, sizeof(linha), arquivoEntrada) != NULL) {
-        if (strstr(linha, nomeProcurado) != NULL) {
+    while (fgets(linha, sizeof(linha), arquivoEntrada) != NULL) 
+    {
+        if (strstr(linha, nomeProcurado) != NULL) 
+        {
             // Encontrou a tabela com o nome desejado, parar de copiar
             break;
         }
@@ -42,15 +46,18 @@ void removerTabela(Tabela *tabela)
     }
 
     // Copiar linhas após a tabela com o nome desejado
-    while (fgets(linha, sizeof(linha), arquivoEntrada) != NULL) {
-        if (strstr(linha, "<--->") != NULL) {
+    while (fgets(linha, sizeof(linha), arquivoEntrada) != NULL) 
+    {
+        if (strstr(linha, "<--->") != NULL) 
+        {
             // Encontrou a marca "<--->", parar de copiar
             break;
         }
     }
 
     // Copiar o restante do arquivo para o arquivo de saída
-    while (fgets(linha, sizeof(linha), arquivoEntrada) != NULL) {
+    while (fgets(linha, sizeof(linha), arquivoEntrada) != NULL) 
+    {
         fputs(linha, arquivoSaida);
     }
 
@@ -77,13 +84,15 @@ void salvarArquivo(Tabela *tabela)
     char linha[9999];
     long posicaoAtual = 0; // Inicializa a posição atual do ponteiro do arquivo
 
-    if (tabela == NULL) {
+    if (tabela == NULL) 
+    {
         printf("A tabela é nula. Não é possível salvar.\n");
         return;
     }
 
     FILE *file = fopen("tabelas.itp", "a+"); // Abre o arquivo para leitura e escrita
-    if (file == NULL) {
+    if (file == NULL) 
+    {
         perror("Erro ao abrir o arquivo para salvar a tabela");
         return;
     }
@@ -103,8 +112,10 @@ void salvarArquivo(Tabela *tabela)
     fprintf(file, "Colunas: %d\n", tabela->colunas);
 
     //Tipos das colunas
-    for(i = 0;i < tabela->colunas;i++){
-        switch (tabela->tiposColuna[i]) {
+    for(i = 0;i < tabela->colunas;i++)
+    {
+        switch (tabela->tiposColuna[i]) 
+        {
                 case STRING_TYPE:
                     fprintf(file, "1");
                     break;
@@ -122,16 +133,20 @@ void salvarArquivo(Tabela *tabela)
     fprintf(file, "<-->\n");
 
     //Nome das colunas
-    for(i = 0; i < tabela->colunas;i++){
+    for(i = 0; i < tabela->colunas;i++)
+    {
         fprintf(file, "%s", tabela->nomeColuna[i]);
         //Se ainda tiver colunas digita "," senão pula a linha
         (i != tabela->colunas-1) ? fprintf(file, ",") : fprintf(file, "\n");
     }
 
     //Informações das celulas
-    for(i = 0; i < tabela->linhas-1;i++){
-        for(j = 0; j < tabela->colunas;j++){
-            switch (tabela->tiposColuna[j]) {
+    for(i = 0; i < tabela->linhas-1;i++)
+    {
+        for(j = 0; j < tabela->colunas;j++)
+        {
+            switch (tabela->tiposColuna[j]) 
+            {
                 case INT_TYPE:
                     fprintf(file, "%d", tabela->table[i][j].intVal);
                     break;
@@ -142,7 +157,8 @@ void salvarArquivo(Tabela *tabela)
                     fprintf(file, "%f", tabela->table[i][j].floatVal);
                     break;
             }
-            if(j != tabela->colunas-1){
+            if(j != tabela->colunas-1)
+            {
                 fprintf(file, ",");
             }
         }
@@ -164,7 +180,8 @@ void salvarArquivo(Tabela *tabela)
 void listarTabelas() 
 {
     FILE *file = fopen("tabelas.itp", "r+");
-    if (file == NULL) {
+    if (file == NULL) 
+    {
         perror("Erro ao abrir o arquivo");
         return;
     }
@@ -173,20 +190,24 @@ void listarTabelas()
     long posicaoAtual = 0; // Inicializa a posição atual do ponteiro do arquivo
 
     // Lê cada linha do arquivo
-    while (fgets(linha, sizeof(linha), file) != NULL) {
+    while (fgets(linha, sizeof(linha), file) != NULL) 
+    {
         // Remove o caractere de nova linha
         linha[strcspn(linha, "\n")] = '\0';
 
         // Verifica se a linha contém "Nomedatabela:"
-        if (strstr(linha, "Nomedatabela:") != NULL) {
+        if (strstr(linha, "Nomedatabela:") != NULL) 
+        {
             // Encontrou a linha, agora vamos extrair o nome
             char *posicaoNome = strchr(linha, ':'); // Encontra a posição do caractere ':' na linha
-            if (posicaoNome != NULL) {
+            if (posicaoNome != NULL) 
+            {
                 // Incrementa a posição para ignorar o ':'
                 posicaoNome++;
 
                 // Remove espaços em branco no início, se houver
-                while (*posicaoNome == ' ') {
+                while (*posicaoNome == ' ') 
+                {
                     posicaoNome++;
                 }
 
@@ -206,9 +227,11 @@ void listarTabelas()
 }
 
 
-Tabela* carregarTabela(const char* nomeTabela) {
+Tabela* carregarTabela(const char* nomeTabela) 
+{
     FILE* arquivo = fopen("tabelas.itp", "r");
-    if (arquivo == NULL) {
+    if (arquivo == NULL) 
+    {
         perror("Erro ao abrir o arquivo");
         return NULL;
     }
@@ -216,14 +239,17 @@ Tabela* carregarTabela(const char* nomeTabela) {
     char linha[1024];
     bool encontrouTabela = false;
 
-    while (fgets(linha, sizeof(linha), arquivo)) {
-        if (strstr(linha, "Nomedatabela:") && strstr(linha, nomeTabela)) {
+    while (fgets(linha, sizeof(linha), arquivo)) 
+    {
+        if (strstr(linha, "Nomedatabela:") && strstr(linha, nomeTabela)) 
+        {
             encontrouTabela = true;
             break;
         }
     }
 
-    if (!encontrouTabela) {
+    if (!encontrouTabela) 
+    {
         printf("Tabela '%s' não encontrada no arquivo '%s'.\n", nomeTabela, "tabelas.itp");
         fclose(arquivo);
         return NULL;
@@ -232,7 +258,8 @@ Tabela* carregarTabela(const char* nomeTabela) {
    //fgets(linha, sizeof(linha), arquivo);
 
     int linhas, colunas;
-    if (fscanf(arquivo, "Linhas: %d\nColunas: %d\n", &linhas, &colunas) != 2) {
+    if (fscanf(arquivo, "Linhas: %d\nColunas: %d\n", &linhas, &colunas) != 2) 
+    {
         fprintf(stderr, "Erro na leitura das dimensões da tabela.\n");
         fclose(arquivo);
         return NULL;
@@ -246,8 +273,10 @@ Tabela* carregarTabela(const char* nomeTabela) {
     fgets(linha, sizeof(linha), arquivo); // Lê a linha dos tipos
 
     char* token = strtok(linha, ",");
-    for (int i = 0; i < colunas; i++) {
-        if (token == NULL) {
+    for (int i = 0; i < colunas; i++) 
+    {
+        if (token == NULL) 
+        {
             fprintf(stderr, "Erro na leitura dos tipos de colunas.\n");
             fclose(arquivo);
             return NULL;
@@ -266,8 +295,10 @@ Tabela* carregarTabela(const char* nomeTabela) {
     fgets(linha, sizeof(linha), arquivo); // Lê a linha dos nomes das colunas
 
     token = strtok(linha, ",");
-    for (int i = 0; i < colunas; i++) {
-        if (token == NULL) {
+    for (int i = 0; i < colunas; i++) 
+    {
+        if (token == NULL) 
+        {
             fprintf(stderr, "Erro na leitura dos nomes das colunas.\n");
             fclose(arquivo);
             return NULL;
@@ -278,21 +309,25 @@ Tabela* carregarTabela(const char* nomeTabela) {
     }
 
     for (int i = 0; i < linhas-1; i++) {
-    if (fgets(linha, sizeof(linha), arquivo) == NULL) {
+    if (fgets(linha, sizeof(linha), arquivo) == NULL) 
+    {
         fprintf(stderr, "Erro ao ler dados da tabela.\n");
         fclose(arquivo);
         return NULL;
     }
     // Remova ou mova esta linha para antes do strtok se for apenas para depuração
     char* token = strtok(linha, ",");
-    for (int j = 0; j < colunas; j++) {
-        if (token == NULL) {
+    for (int j = 0; j < colunas; j++) 
+    {
+        if (token == NULL) 
+        {
             fprintf(stderr, "Erro na leitura dos dados da tabela.\n");
 
             fclose(arquivo);
             return NULL;
         }
-        switch (tabela->tiposColuna[j]) {
+        switch (tabela->tiposColuna[j]) 
+        {
             case STRING_TYPE:
                 token[strcspn(token, "\n")] = '\0';
                 strncpy(tabela->table[i][j].strVal, token, TAMANHO_MAX_NOME - 1);
