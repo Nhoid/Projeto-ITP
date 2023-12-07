@@ -506,8 +506,8 @@ void PegarDados(Tabela *tabela)
             printf("Digite o valor para a chave primária: ");
             fgets(buffer, sizeof(buffer), stdin);
 
-            // Verifica se o usuário digitou "Fim"
-            if (strcmp(buffer, "Fim\n") == 0) 
+            buffer[strcspn(buffer, "\n")] = 0; // Remove o '\n' no final
+            if (strcmp(buffer, "Fim") == 0) 
             {
                 continuar = false;
                 chaveValida = true;
@@ -539,7 +539,7 @@ void PegarDados(Tabela *tabela)
             }
 
         } while (!chaveValida && continuar);
-        if (!continuar)
+        if (continuar)
         {
             break;
         }
@@ -549,7 +549,8 @@ void PegarDados(Tabela *tabela)
             printf("Digite o valor para a coluna '%s': ", tabela->nomeColuna[j]);
             fgets(buffer, 100, stdin); // Lê a entrada do usuário
             // Verifica se o usuário digitou 'Fim'
-            if (strcmp(buffer, "Fim\n") == 0) 
+            buffer[strcspn(buffer, "\n")] = 0; // Remove o '\n' no final
+            if (strcmp(buffer, "Fim") == 0) 
             {
                 continuar = false;
                 break;
