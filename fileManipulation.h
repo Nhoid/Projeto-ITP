@@ -13,4 +13,7 @@ Tabela* carregarTabela(const char* nomeTabela);
 //LISTA DADOS DAS TABELAS DE UM ARQUIVO
 void listarTabelas();
 
+//EXCLUI TABELA DE UM ARQUIVO
+void removerTabela();
+
 #endif

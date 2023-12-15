@@ -25,7 +25,7 @@ void tabelaSelecionada(Tabela *tabela) {
         tamanhoNome = strlen(nometabela); // Calcula o tamanho da string
         
         if(tamanhoNome > 21){
-            printf("| 9. Sair                               |   ");
+            printf("| 10. Sair                              |   ");
             for(i = 0;i < 21; i++){
                 printf("%c",nometabela[i]);
             }
@@ -38,11 +38,11 @@ void tabelaSelecionada(Tabela *tabela) {
             {
                 sup = remove_acento(nometabela[i], &diferenca);//CALCULA QUANTOS LETRAS COM ACENTUAÇÃO TEM
             }
-            printf("| 9. Sair                               |   %-*s", quantidadeDeEspacos-diferenca/2, nometabela);
+            printf("| 10. Sair                              |   %-*s", quantidadeDeEspacos-diferenca/2, nometabela);
             printf("|\n");
         }
     } else {
-        printf("| 9. Sair                               |   Sem Tabela Carregada      |\n");
+        printf("| 10. Sair                              |   Sem Tabela Carregada      |\n");
     }
 }
 
@@ -81,9 +81,7 @@ if(*quadrodeavisos->quadroAvisosAtivo == 0){
         	if(*quadrodeavisos->tabelaCarregada){
             	printf(" Tabela:                     |\n");
         	}
-    	}else{
-            printf("                             |\n");
-        }
+    	}
         if(*quadrodeavisos->invalido){
             printf(" Opção inválida!             |\n");
         }
@@ -131,8 +129,6 @@ if(*quadrodeavisos->quadroAvisosAtivo == 0){
                     printf(" %-*s",quantidadeDeEspacos - diferenca/2, nometabela);
                     printf("  |\n");
                 }
-        }else{
-            printf("                             |\n");
         }
         }
 
@@ -151,9 +147,7 @@ if(*quadrodeavisos->quadroAvisosAtivo == 0){
         	if(*quadrodeavisos->tabelaCarregada){
             	printf("                             |\n");
         	}
-    	}else{
-            printf("                             |\n");
-        }
+    	}
         if(*quadrodeavisos->invalido){
             printf(" tecla para continuar.       |\n");
         }
@@ -168,8 +162,6 @@ if(*quadrodeavisos->quadroAvisosAtivo == 0){
         if(*quadrodeavisos->tabelaCarregada){
         	if(tabela != NULL){
             	printf(" Carregada com sucesso!      |\n");
-            }else{
-                printf("                             |\n");
             }
         }
         if(*quadrodeavisos->invalido){
@@ -187,9 +179,7 @@ if(*quadrodeavisos->quadroAvisosAtivo == 0){
         	if(*quadrodeavisos->tabelaCarregada){
             	printf("                             |\n");
         	}
-    	}else{
-                printf("                             |\n");
-            }
+    	}
         if(*quadrodeavisos->invalido){
             printf("                             |\n");
         }

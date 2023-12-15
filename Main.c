@@ -54,12 +54,14 @@ int main(){
         printf("| 7. Pesquisar Valor                    |                             |\n");//CONSERTAR
         printf("|---------------------------------------|                             |\n");
         printf("| Gerenciamento de Tabela:              |                             |\n");
-        printf("| 8. Salvar Tabela                      | Tabela Selecionada:         |\n");
+        printf("| 8. Salvar Tabela                      |                             |\n");
+        printf("| 9. Apagar Tabela                      | Tabela Selecionada:         |\n");
         tabelaSelecionada(lambda);
         printf("=======================================================================\n");
         //Reiniciando variavel dos ponteiros da função quadroDeAvisos();
         *(quadrodeavisos->aviso) = 0;
         *(quadrodeavisos->quadroAvisosAtivo) = 0;
+        *(quadrodeavisos->tabelaCarregada) = 0;
         *(quadrodeavisos->linhaAviso) = 0;
         *(quadrodeavisos->salvo) = 0;
         *(quadrodeavisos->invalido) = 0;
@@ -156,7 +158,10 @@ int main(){
                     *(quadrodeavisos->aviso) = 1; *(quadrodeavisos->quadroAvisosAtivo) = 1;
                 }
                 break;
-            case 9://SAIR DO PROGRAMA
+            case 9://EXCLUIRTABELA
+                removerTabela(lambda);
+                break;
+            case 10://SAIR DO PROGRAMA
                 *(quadrodeavisos->executando) = 0;
                 if (lambda != NULL) 
                 {

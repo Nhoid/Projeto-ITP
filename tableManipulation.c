@@ -482,7 +482,7 @@ void mostrarTabela(Tabela *tabela)
 void PegarDados(Tabela *tabela) 
 {
     char buffer[100]; // Buffer para entrada do usuário
-    bool continuar = true, chaveValida, inteiro;
+    bool continuar = true, chaveValida = false, inteiro;
     int linhaAtual = tabela->linhas - 1; // Ajustado para corresponder ao índice correto
     int chave, resultado;
     char *endPtr;
@@ -498,30 +498,31 @@ void PegarDados(Tabela *tabela)
         //FAZ A VERIFICAÇÃO SE A CHAVE PRIMARIA INSERIDA JA EXISTE NA TABELA
         do 
         {
-            int chave;
+            int chave, verificacaoTotal = 0;
             char buffer[100];
-            bool continuar = true, chaveValida = false;
             char *endPtr;
 
             printf("Digite o valor para a chave primária: ");
-            fgets(buffer, sizeof(buffer), stdin);
 
-            buffer[strcspn(buffer, "\n")] = 0; // Remove o '\n' no final
+            fgets(buffer, sizeof(buffer), stdin);
+            buffer[strcspn(buffer, "\n")] = 0; // Remover nova linha
+
             if (strcmp(buffer, "Fim") == 0) 
             {
                 continuar = false;
-                chaveValida = true;
                 break;
             }
 
-            // Converte a entrada em um inteiro
+
             chave = strtol(buffer, &endPtr, 10);
 
-            // Verifica se a entrada não é um número inteiro puro
-            if (*endPtr != '\n' && *endPtr != '\0') 
+            if (buffer == endPtr || *endPtr != '\0') 
             {
                 printf("Tipo de chave inválida, a chave precisa ser um número inteiro puro.\n");
                 continue;
+            }else
+            {
+                verificacaoTotal++;
             }
 
             // Verifica se a chave é negativa
@@ -529,6 +530,9 @@ void PegarDados(Tabela *tabela)
             {
                 printf("A chave primária não pode ser negativa. Por favor, insira um número positivo.\n");
                 continue;
+            }else
+            {
+                verificacaoTotal++;
             }
 
             // Aqui, inserir a função verificarChave que checa se a chave já existe na tabela
@@ -536,10 +540,22 @@ void PegarDados(Tabela *tabela)
             if (!chaveValida) 
             {
                 printf("Chave primária já existe. Por favor, insira uma chave primária única.\n");
+                verificacaoTotal = false;
+            }else
+            {
+                verificacaoTotal++;
+            }
+            if (verificacaoTotal == 3)
+            {
+                continuar == true;
+                break;
             }
 
         } while (!chaveValida && continuar);
-        if (continuar)
+        if (!continuar) 
+        {
+            break;
+        }else if (strcmp(buffer, "Fim") == 0)
         {
             break;
         }
